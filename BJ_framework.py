@@ -154,23 +154,16 @@ class BlackjackGUI:
         player_previous_frame = tk.Frame(self.player_frame)
         player_previous_frame.pack(side=tk.LEFT, pady=10)
 
-        for card in self.game.player.hand.cards[:-1]:
-            image_path = os.path.join("~/Documents/PROYECTO PROG BLACKJACK/BLACKJACK/bj_project-main/", card.get_image())
-        try:
-            img = PhotoImage(file=image_path)
+        for card in self.game.player.hand.cards[:-1]:  # All cards except the last one
+            img = PhotoImage(file=card.get_image())
             img = img.subsample(3, 3)  # Resize the image (adjust according to your preference)
             lbl = tk.Label(player_previous_frame, image=img)
             lbl.image = img
-            lbl.pack(side=tk.TOP, pady=5)
-        
-        except tk.TclError as e:
-            print(f"Error loading image {image_path}: {e}")
+            lbl.pack(side=tk.TOP, pady=5)  # Add vertical space between cards
 
         # The last card of the player in the center
         last_card = self.game.player.hand.cards[-1]
-        home_directory = os.path.expanduser("~")
-        last_card_image_path = os.path.join(home_directory, "Documents/PROYECTO PROG BLACKJACK/BLACKJACK/bj_project-main/", last_card.get_image())
-        img = PhotoImage(file=last_card_image_path)
+        img = PhotoImage(file=last_card.get_image())
         lbl = tk.Label(self.player_frame, image=img)
         lbl.image = img
         lbl.pack(side=tk.LEFT, padx=10)  # Center the last card horizontally a bit more
@@ -191,17 +184,15 @@ class BlackjackGUI:
         dealer_previous_frame.pack(side=tk.RIGHT, pady=10)
 
         for card in self.game.dealer.hand.cards[:-1]:  # All cards except the last one
-            card_image_path = "~/Documents/PROYECTO PROG BLACKJACK/BLACKJACK/bj_project-main/img/" + card.get_image()
-            img = PhotoImage(file=card_image_path)
+            img = PhotoImage(file=card.get_image())
             img = img.subsample(3, 3)  # Resize the image (adjust according to your preference)
             lbl = tk.Label(dealer_previous_frame, image=img)
             lbl.image = img
             lbl.pack(side=tk.TOP, pady=5)  # Add vertical space between cards
 
         # The last card of the dealer in the center
-        last_dealer_card = self.game.dealer.hand.cards[-1]
-        last_dealer_card_image_path = "~/Documents/PROYECTO PROG BLACKJACK/BLACKJACK/bj_project-main/img/" + last_dealer_card.get_image()
-        img = PhotoImage(file=last_dealer_card_image_path)
+        last_card = self.game.dealer.hand.cards[-1]
+        img = PhotoImage(file=last_card.get_image())
         lbl = tk.Label(self.dealer_frame, image=img)
         lbl.image = img
         lbl.pack(side=tk.RIGHT, padx=10)  # Center the last card horizontally a bit more
