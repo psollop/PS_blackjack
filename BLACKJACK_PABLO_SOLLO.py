@@ -1,12 +1,14 @@
+# PABLO SOLLO BLACKJACK
+
 import tkinter as tk
 from tkinter import PhotoImage, messagebox
 import random
-import os
 
 class Card:
     def __init__(self, suit: str, value: int):
         self.suit = suit
-        self.value = value
+        self.value = value        
+        pass
 
     def get_numeric_value(self) -> int:
         if self.value in ['K', 'Q', 'J']:
@@ -15,73 +17,90 @@ class Card:
             return 11
         else:
             return int(self.value)
+    pass
 
     def get_image(self):
-        return f"img/{self.value}{self.suit}.png"
+        return f"img/{self.value}_of_{self.suit}.png"        
+    pass
 
 class Deck:
-    def __init__(self, suits=[], values=[]):
-        self.cards = [Card(suit, value) for suit in suits for value in values]
+    def __init__(self, suits = [], values = []):
+        self.cards = []
+        for value in values:
+            for suit in suits:
+                self.cards.append(Card(suit,value))
+        pass
 
     def shuffle(self):
         random.shuffle(self.cards)
+        pass
 
-    def deal(self) -> Card:
-        return self.cards.pop(0)
+    def deal(self)-> Card:
+        if not self.cards:
+            raise ValueError("Deck is empty")
+        return self.cards.pop()
+    pass
 
 class EnglishDeck(Deck):
     def __init__(self):
         suits = ['hearts', 'diamonds', 'clubs', 'spades']
         values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
         super().__init__(suits, values)
-        self.shuffle()
+        pass
 
 class Hand:
     def __init__(self):
         self.cards = []
+        pass
 
     def add_card(self, card: Card):
         self.cards.append(card)
+        pass
 
-    def value(self) -> int:
-        hand_value = sum(card.get_numeric_value() for card in self.cards)
+    def value(self)->int:
+        total_value = sum(card.get_numeric_value() for card in self.cards)
         num_aces = sum(1 for card in self.cards if card.value == 'A')
 
-        while hand_value > 21 and num_aces:
-            hand_value -= 10
+        while total_value > 21 and num_aces:
+            total_value -= 10
             num_aces -= 1
 
-        return hand_value
+        return total_value
+    pass
 
 class Player:
     def __init__(self, name):
         self.name = name
         self.hand = Hand()
+        pass
 
 class BlackjackGame:
     def __init__(self):
-        self.deck = EnglishDeck()
         self.player = Player("Player")
         self.dealer = Player("Dealer")
-
-    def start_game(self):
         self.deck = EnglishDeck()
         self.deck.shuffle()
+        pass
+
+    def start_game(self):
         self.player.hand = Hand()
         self.dealer.hand = Hand()
 
-        for _ in range(2):
+        for i in range (2):
             self.player.hand.add_card(self.deck.deal())
             self.dealer.hand.add_card(self.deck.deal())
+        pass
 
-    def hit(self) -> bool:
+    def hit(self)-> bool:
         self.player.hand.add_card(self.deck.deal())
         return self.player.hand.value() > 21
+    pass
 
     def dealer_hit(self) -> bool:
-        while self.dealer.hand.value() < 17:
-            self.dealer.hand.add_card(self.deck.deal())
-        return False
+        if self.dealer.hand.value() >= 17:
+            return False  # No más cartas si el dealer tiene 17 o más
+        self.dealer.hand.add_card(self.deck.deal())
+        return self.dealer.hand.value() <= 21
 
     def determine_winner(self):
         player_value = self.player.hand.value()
@@ -89,16 +108,19 @@ class BlackjackGame:
 
         if player_value > 21:
             return "You've busted! The house wins."
-        elif dealer_value > 21:
-            return "Dealer busted! You win."
-        elif player_value > dealer_value:
+
+        if dealer_value > 21:
+            return "Dealer busts! You win."
+
+        if player_value > dealer_value:
             return "You win!"
-        elif player_value < dealer_value:
+        elif dealer_value > player_value:
             return "Dealer wins."
         else:
             return "It's a tie!"
+    pass
 
-
+# The GUI code is provided, so students don't need to modify it
 class BlackjackGUI:
     def __init__(self, game):
         self.game = game
@@ -127,17 +149,29 @@ class BlackjackGUI:
         self.update_interface()
 
     def handle_hit(self, event):
-        if self.game.hit():
+        try:
+            if self.game.hit():
+                self.update_interface()
+                self.end_game("You've busted! The house wins.")
+                return
             self.update_interface()
-            self.end_game("You've busted! The house wins.")
-            return
-        self.update_interface()
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
     def handle_stand(self):
         self.btn_stand.config(state=tk.DISABLED)
-        while self.game.dealer_hit():
-            self.update_interface()
-        self.end_game(self.game.determine_winner())
+        self.process_dealer_hit()
+
+        return self.dealer.hand.value() <= 21
+    def process_dealer_hit(self):
+        try:
+            if self.game.dealer_hit():
+                self.update_interface()
+                self.root.after(1000, self.process_dealer_hit)  # Espera 1 segundo antes de la siguiente acción
+            else:
+                self.end_game(self.game.determine_winner())
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
     def update_interface(self):
         # Remove all widgets from player, deck, and dealer frames
@@ -207,3 +241,4 @@ if __name__ == "__main__":
     game_logic = BlackjackGame()
     app = BlackjackGUI(game_logic)
     app.run()
+
